@@ -1,34 +1,52 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  Headers,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
+import { CreateDto } from './dto/Create.dto';
+import { UpdateDto } from './dto/Update.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+  create(@Headers() headers: any, @Body() createDto: CreateDto) {
+    const jwtString = headers.authorization.split('Bearer ')[1];
+    return this.postsService.create(createDto, headers.userId, jwtString);
   }
 
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  findPage(@Query('limit') limit: number, @Query('page') page: number) {
+    return this.postsService.findPage(limit, page);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
+  findOne(@Headers() headers: any, @Param('id') id: string) {
+    const jwtString = headers.authorization.split('Bearer ')[1];
+    return this.postsService.findOne(id, headers.userid, jwtString);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(+id, updatePostDto);
+  update(
+    @Headers() headers: any,
+    @Param('id') id: string,
+    @Body() updateDto: UpdateDto,
+  ) {
+    const jwtString = headers.authorization.split('Bearer ')[1];
+    return this.postsService.update(id, updateDto, headers.userid, jwtString);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(+id);
+  remove(@Headers() headers: any, @Param('id') id: string) {
+    const jwtString = headers.authorization.split('Bearer ')[1];
+    return this.postsService.remove(id, headers.userid, jwtString);
   }
 }

@@ -1,26 +1,82 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { CreateDto } from './dto/Create.dto';
+import { UpdateDto } from './dto/Update.dto';
+import { PostEntity } from './entities/post.entity';
+import { UsersService } from '../users/users.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class PostsService {
-  create(createPostDto: CreatePostDto) {
-    return 'This action adds a new post';
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
+    @InjectRepository(PostEntity)
+    private postRepository: Repository<PostEntity>,
+  ) {}
+  async create(createDto: CreateDto, userId: string, jwtString: string) {
+    if (!this.authService.isLogined(userId, jwtString)) {
+      throw new UnauthorizedException('로그인되어 있지 않습니다.');
+    }
+    const newPost = new PostEntity();
+    newPost.title = createDto.title;
+    newPost.content = createDto.content;
+    newPost.writer = await this.usersService.findOne(userId);
+    newPost.createdAt = new Date();
+
+    return await this.postRepository.save(newPost);
   }
 
-  findAll() {
-    return `This action returns all posts`;
+  async findPage(limit: number, page: number) {
+    const offset = (page - 1) * limit;
+    return await this.postRepository.find({
+      skip: offset,
+      take: limit,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  async findOne(id: string, userId: string, jwtString: string) {
+    const post = await this.postRepository.findOne({
+      where: { id: id },
+      relations: ['writer'],
+    });
+    if (!post) {
+      throw new NotFoundException('존재하지 않는 게시물입니다.');
+    }
+    if (
+      post.writer.id !== userId ||
+      this.authService.isLogined(userId, jwtString)
+    ) {
+      throw new UnauthorizedException('권한이 없습니다.');
+    }
+    delete post.writer.posts;
+    delete post.writer.password;
+    delete post.writer.email;
+    return post;
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async update(
+    id: string,
+    updateDto: UpdateDto,
+    userId: string,
+    jwtString: string,
+  ) {
+    const post = await this.findOne(id, userId, jwtString);
+    post.title = updateDto.title;
+    post.content = updateDto.content;
+    await this.postRepository.save(post);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(id: string, userId: string, jwtString: string) {
+    const post = await this.findOne(id, userId, jwtString);
+    await this.postRepository.remove(post);
   }
 }

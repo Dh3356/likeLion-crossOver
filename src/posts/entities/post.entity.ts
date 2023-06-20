@@ -1,7 +1,8 @@
-import {Column, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
-import {UserEntity} from '../../users/entities/user.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { UserEntity } from '../../users/entities/user.entity';
 
 //Post Table
+@Entity('Post')
 export class PostEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string; //id
