@@ -20,7 +20,7 @@ export class PostsController {
   @Post()
   create(@Headers() headers: any, @Body() createDto: CreateDto) {
     const jwtString = headers.authorization.split('Bearer ')[1];
-    return this.postsService.create(createDto, headers.userId, jwtString);
+    return this.postsService.create(createDto, headers.userid, jwtString);
   }
 
   @Get()

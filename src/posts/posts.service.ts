@@ -28,8 +28,10 @@ export class PostsService {
     newPost.content = createDto.content;
     newPost.writer = await this.usersService.findOne(userId);
     newPost.createdAt = new Date();
-
-    return await this.postRepository.save(newPost);
+    await this.postRepository.save(newPost);
+    delete newPost.writer.password;
+    delete newPost.writer.email;
+    return newPost;
   }
 
   async findPage(limit: number, page: number) {

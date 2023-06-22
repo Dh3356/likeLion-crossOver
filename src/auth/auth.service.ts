@@ -30,8 +30,7 @@ export class AuthService {
       );
     }
 
-    const payload = loginDto;
-    const sign = jwt.sign(payload, this.config.JWT_SECRET, {
+    const sign = jwt.sign(loginDto, this.config.JWT_SECRET, {
       expiresIn: '1d',
       audience: 'example.com',
       issuer: 'example.com',
@@ -51,15 +50,10 @@ export class AuthService {
       const payload = jwt.verify(jwtString, this.config.JWT_SECRET) as (
         | jwt.JwtPayload
         | string
-      ) & { userId: string; userPw: string };
-      const { userId } = payload;
-      if (id !== userId) {
-        return false;
-      }
-
-      return true;
+      ) & { id: string; password: string };
+      return id === payload.id;
     } catch (e) {
-      throw new ConflictException(e.stack);
+      throw new ConflictException('jwt Token Error');
     }
   }
 
