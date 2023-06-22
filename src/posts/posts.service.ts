@@ -55,7 +55,7 @@ export class PostsService {
     }
     if (
       post.writer.id !== userId ||
-      this.authService.isLogined(userId, jwtString)
+      !this.authService.isLogined(userId, jwtString)
     ) {
       throw new UnauthorizedException('권한이 없습니다.');
     }
