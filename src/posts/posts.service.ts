@@ -79,6 +79,7 @@ export class PostsService {
     post.title = updateDto.title;
     post.content = updateDto.content;
     await this.postRepository.save(post);
+    return post;
   }
 
   async remove(id: string, userId: string, jwtString: string) {
