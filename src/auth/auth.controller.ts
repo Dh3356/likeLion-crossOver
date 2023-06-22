@@ -14,11 +14,6 @@ export class AuthController {
     return this.authService.login(loginDto, response);
   }
 
-  @Post('/logout')
-  logout(@Headers('userId') userId: string, @Res() response: Response) {
-    return this.authService.logout(userId, response);
-  }
-
   @Post('/sign_up')
   signup(@Body() signUpDto: SignUpDto) {
     return this.authService.signUp(signUpDto);

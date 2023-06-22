@@ -46,15 +46,6 @@ export class AuthService {
     });
   }
 
-  logout(userId: string, response: Response) {
-    response.cookie('jwt', '', {
-      maxAge: 0,
-    });
-    return response.send({
-      message: 'logout',
-    });
-  }
-
   isLogined(id: string, jwtString: string) {
     try {
       const payload = jwt.verify(jwtString, this.config.JWT_SECRET) as (
@@ -78,5 +69,7 @@ export class AuthService {
     newUser.password = signUpDto.password;
     newUser.email = signUpDto.email;
     await this.usersService.create(newUser);
+    delete newUser.password;
+    return newUser;
   }
 }
