@@ -53,7 +53,7 @@ export class AuthService {
       ) & { id: string; password: string };
       return id === payload.id;
     } catch (e) {
-      throw new ConflictException('jwt Token Error');
+      throw new ConflictException(e.message);
     }
   }
 
