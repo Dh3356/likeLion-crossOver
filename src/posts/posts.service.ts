@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -35,6 +36,9 @@ export class PostsService {
   }
 
   async findPage(limit: number, page: number) {
+    if (page < 1) {
+      throw new BadRequestException('page must greater then 0');
+    }
     const offset = (page - 1) * limit;
     return await this.postRepository.find({
       skip: offset,
