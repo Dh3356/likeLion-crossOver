@@ -8,45 +8,66 @@ import {
   Delete,
   Query,
   Headers,
+  Req,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreateDto } from './dto/Create.dto';
 import { UpdateDto } from './dto/Update.dto';
+import { Request } from 'express';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  create(@Headers() headers: any, @Body() createDto: CreateDto) {
-    const jwtString = headers.authorization.split('Bearer ')[1];
-    return this.postsService.create(createDto, headers.userid, jwtString);
+  create(
+    @Headers('userId') userId: string,
+    @Body() createDto: CreateDto,
+    @Req() request: Request,
+  ) {
+    const jwtToken = request.cookies['jwt'];
+    return this.postsService.create(createDto, userId, jwtToken);
   }
 
   @Get()
-  findPage(@Query('limit') limit: number, @Query('page') page: number) {
-    return this.postsService.findPage(limit, page);
+  findPage(
+    @Headers('userId') userId: string,
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+    @Req() request: Request,
+  ) {
+    const jwtToken = request.cookies['jwt'];
+    return this.postsService.findPage(userId, limit, page, jwtToken);
   }
 
   @Get(':id')
-  findOne(@Headers() headers: any, @Param('id') id: string) {
-    const jwtString = headers.authorization.split('Bearer ')[1];
-    return this.postsService.findOne(id, headers.userid, jwtString);
+  findOne(
+    @Headers('userId') userId: string,
+    @Param('id') id: string,
+    @Req() request: Request,
+  ) {
+    const jwtToken = request.cookies['jwt'];
+    return this.postsService.findOne(id, userId, jwtToken);
   }
 
   @Patch(':id')
   update(
-    @Headers() headers: any,
+    @Headers('userId') userId: string,
     @Param('id') id: string,
     @Body() updateDto: UpdateDto,
+    @Req() request: Request,
   ) {
-    const jwtString = headers.authorization.split('Bearer ')[1];
-    return this.postsService.update(id, updateDto, headers.userid, jwtString);
+    const jwtToken = request.cookies['jwt'];
+    return this.postsService.update(id, updateDto, userId, jwtToken);
   }
 
   @Delete(':id')
-  remove(@Headers() headers: any, @Param('id') id: string) {
-    const jwtString = headers.authorization.split('Bearer ')[1];
-    return this.postsService.remove(id, headers.userid, jwtString);
+  remove(
+    @Headers('userId') userId: string,
+    @Param('id') id: string,
+    @Req() request: Request,
+  ) {
+    const jwtToken = request.cookies['jwt'];
+    return this.postsService.remove(id, userId, jwtToken);
   }
 }

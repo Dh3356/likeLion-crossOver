@@ -30,23 +30,36 @@ export class PostsService {
     newPost.writer = await this.usersService.findOne(userId);
     newPost.createdAt = new Date();
     await this.postRepository.save(newPost);
-    delete newPost.writer.password;
-    delete newPost.writer.email;
+    delete newPost.writer;
+    newPost['isMine'] = true;
     return newPost;
   }
 
-  async findPage(limit: number, page: number) {
+  async findPage(
+    userId: string,
+    limit: number,
+    page: number,
+    jwtToken: string,
+  ) {
     if (page < 1) {
       throw new BadRequestException('page must greater then 0');
     }
     const offset = (page - 1) * limit;
-    return await this.postRepository.find({
+    const posts: PostEntity[] = await this.postRepository.find({
       skip: offset,
       take: limit,
       order: {
         createdAt: 'DESC',
       },
+      relations: ['writer'],
     });
+
+    posts.forEach((post) => {
+      post['isMine'] = post.writer.id === userId;
+      delete post.writer;
+    });
+
+    return posts;
   }
 
   async findOne(id: string, userId: string, jwtString: string) {
